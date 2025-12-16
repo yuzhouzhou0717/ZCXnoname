@@ -166,38 +166,6 @@ yesButton.addEventListener("click", function() {
                         <p>你身份证上鲜活的面孔</p>
                         <p>你温润洁净的皮肤</p>
                         <p>我喜欢你任何样子 包括你的名字 一笔一画都想刻在我心里</p>
-                        
-                        <div class="important-text">
-                            <p>我喜欢你，不是一时冲动，而是经过无数个日夜思考后的确定。</p>
-                            <p>我喜欢你，不是因为你完美，而是因为你就是你。</p>
-                            <p>我喜欢你，想要和你一起看春天的花，夏天的海，秋天的落叶，冬天的雪。</p>
-                        </div>
-                        
-                        <p>如果你愿意，我想每天早上和你说早安，每天晚上和你说晚安；<br>
-                           想分享生活中的点点滴滴，无论是开心还是难过；<br>
-                           想成为你可以依靠的人，也想成为你的依靠。</p>
-                        
-                        <p>我知道感情需要时间，需要慢慢来。所以，无论你的答案是什么，我都感谢你出现在我的生命里。但如果你愿意给我一个机会，我一定会用尽全力，让你每天都感受到被爱的幸福。</p>
-                        
-                        <p>这封信写得很长，但还有千言万语没有说完。未来的日子，我想慢慢说给你听。</p>
-                        
-                        <div class="letter-footer">
-                            <p>永远喜欢你的人</p>
-                            <p class="signature">✨ 等你回复的我 ✨</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 信件操作按钮 -->
-                <div class="letter-buttons">
-                    <button class="close-letter" onclick="this.closest('.letter-container').style.display='none'">
-                        💝 珍藏这封信
-                    </button>
-                    <button class="reply-btn" onclick="alert('💌 回信已收到！我会用一生好好珍惜～')">
-                        ✨ 我也喜欢你
-                    </button>
-                </div>
-            </div>
             
             <!-- 浪漫点缀 -->
             <div class="hearts-container"></div>
