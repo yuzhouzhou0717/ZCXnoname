@@ -175,10 +175,8 @@ yesButton.addEventListener("click", function() {
     // ... 后面的JavaScript代码保持不变 ...
     
     // 设置页面样式
-    document.body.style.overflow = "hidden";
-    // 改为只禁止水平滚动
-document.body.style.overflowX = "hidden";
-document.body.style.overflowY = "auto";  // 允许垂直滚动
+    
+    document.body.style.overflowY = "auto";  // 允许垂直滚动
     // 添加CSS样式
     const style = document.createElement('style');
     style.textContent = `
