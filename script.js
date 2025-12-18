@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 创建音频元素
         backgroundMusic = new Audio();
         
-        /
+        
         backgroundMusic.src = "xx.mp3"; // ← 修改这里
         
         // 设置音乐属性
