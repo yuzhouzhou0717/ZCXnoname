@@ -1,92 +1,321 @@
-let yesButton = document.getElementById("yes");
-let noButton = document.getElementById("no");
-let questionText = document.getElementById("question");
-let mainImage = document.getElementById("mainImage");
-
-let clickCount = 0;  // 记录点击 No 的次数
-
-// No 按钮的文字变化
-const noTexts = [
-    "？你认真的吗…", 
-    "要不再想想？", 
-    "不许选这个！ ", 
-    "我会很伤心…", 
-    "好伤心...",
-    "为什么选这个?！",
-    "不行:("
-];
-
-// No 按钮点击事件
-noButton.addEventListener("click", function() {
-    clickCount++;
-
-    // 让 Yes 变大，每次放大 2 倍
-    let yesSize = 1 + (clickCount * 1.2);
-    yesButton.style.transform = `scale(${yesSize})`;
-
-    // 挤压 No 按钮，每次右移 100px
-    let noOffset = clickCount * 50;
-    noButton.style.transform = `translateX(${noOffset}px)`;
-
-    // **新增：让图片和文字往上移动**
-    let moveUp = clickCount * 25; // 每次上移 20px
-    mainImage.style.transform = `translateY(-${moveUp}px)`;
-    questionText.style.transform = `translateY(-${moveUp}px)`;
-
-    // No 文案变化（前 5 次变化）
-    if (clickCount <= 7) {
-        noButton.innerText = noTexts[clickCount - 1];
+// 预先定义成功页面的 CSS
+const successPageStyles = `
+    .yes-screen {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        position: relative;
+        background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
     }
+    
+    .yes-text {
+        color: #e91e63;
+        font-size: 2.8rem;
+        margin: 20px 0 30px;
+        text-align: center;
+        text-shadow: 3px 3px 0 rgba(255, 255, 255, 0.5);
+        animation: heartbeat 1.2s infinite;
+    }
+    
+    .yes-image {
+        max-width: 320px;
+        width: 90%;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(233, 30, 99, 0.3);
+        margin-bottom: 30px;
+        border: 5px solid white;
+    }
+    
+    .read-letter-btn {
+        background: linear-gradient(45deg, #ff4081, #e91e63);
+        color: white;
+        border: none;
+        padding: 18px 40px;
+        font-size: 1.3rem;
+        border-radius: 50px;
+        cursor: pointer;
+        margin: 20px 0 40px;
+        box-shadow: 0 8px 20px rgba(233, 30, 99, 0.4);
+        transition: all 0.3s ease;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+    
+    .read-letter-btn:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 12px 25px rgba(233, 30, 99, 0.6);
+    }
+    
+    .letter-container {
+        display: none;
+        max-width: 800px;
+        width: 95%;
+        margin: 20px auto;
+        animation: slideUp 0.8s ease-out;
+    }
+    
+    .letter {
+        background: linear-gradient(to bottom, #fff9f9, #fff0f5);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        position: relative;
+        border: 2px solid #ffb6c1;
+    }
+    
+    .letter:before {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        border: 1px dashed #ffb6c1;
+        border-radius: 15px;
+        pointer-events: none;
+    }
+    
+    .letter-header {
+        text-align: center;
+        margin-bottom: 40px;
+        border-bottom: 2px solid #ffd6e0;
+        padding-bottom: 20px;
+    }
+    
+    .heart {
+        font-size: 3rem;
+        animation: float 3s infinite;
+    }
+    
+    .letter-header h2 {
+        color: #e91e63;
+        font-size: 2.2rem;
+        margin: 15px 0 10px;
+    }
+    
+    .date {
+        color: #ff6b9d;
+        font-size: 1.1rem;
+        font-style: italic;
+    }
+    
+    .letter-content {
+        line-height: 1.8;
+        font-size: 1.15rem;
+        color: #555;
+        height: 400px; /* 固定高度 */
+        overflow: hidden; /* 隐藏溢出内容 */
+        position: relative;
+        padding-right: 10px;
+    }
+    
+    .letter-scroll-content {
+        position: relative;
+    }
+    
+    .letter-content p {
+        margin-bottom: 20px;
+        text-align: justify;
+    }
+    
+    .letter-footer {
+        text-align: right;
+        margin-top: 50px;
+        padding-top: 20px;
+        border-top: 1px dashed #ffb6c1;
+    }
+    
+    .signature {
+        font-size: 1.3rem;
+        color: #e91e63;
+        font-weight: bold;
+        margin-top: 10px;
+        animation: glow 2s infinite;
+    }
+    
+    /* 滚动控制按钮 */
+    .scroll-controls {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .scroll-control-btn {
+        background: linear-gradient(45deg, #9c27b0, #673ab7);
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        font-size: 1rem;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: bold;
+    }
+    
+    .scroll-control-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .scroll-control-btn.pause {
+        background: linear-gradient(45deg, #f44336, #d32f2f);
+    }
+    
+    .scroll-control-btn.resume {
+        background: linear-gradient(45deg, #4CAF50, #2E7D32);
+    }
+    
+    .scroll-control-btn.restart {
+        background: linear-gradient(45deg, #2196F3, #0D47A1);
+    }
+    
+    .scroll-control-btn.disabled {
+        background: linear-gradient(45deg, #9e9e9e, #757575);
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .scroll-control-btn.disabled:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .hearts-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+    }
+    
+    @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes glow {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes floatHeart {
+        0% {
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-100px) rotate(360deg);
+            opacity: 0;
+        }
+    }
+    
+    /* 自动滚动动画 - 只播放一次 */
+    @keyframes autoScrollOnce {
+        0% {
+            transform: translateY(0);
+        }
+        100% {
+            transform: translateY(calc(-100% + 400px + 40px));
+        }
+    }
+    
+    .auto-scroll-paused {
+        animation-play-state: paused !important;
+    }
+    
+    .scroll-completed {
+        animation: none !important;
+        transform: translateY(calc(-100% + 400px));
+    }
+    
+    @media (max-width: 768px) {
+        .yes-text {
+            font-size: 2rem;
+        }
+        
+        .letter {
+            padding: 25px;
+        }
+        
+        .letter-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .letter-content {
+            font-size: 1rem;
+            height: 300px; /* 移动端更小的高度 */
+        }
+        
+        .scroll-completed {
+            transform: translateY(calc(-100% + 300px +30px));
+        }
+        
+        .scroll-controls {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .scroll-control-btn {
+            width: 200px;
+        }
+    }
+`;
 
-    // 图片变化（前 5 次变化）
-    if (clickCount === 1) mainImage.src = "images/shocked2.gif"; // 震惊
-    if (clickCount === 2) mainImage.src = "images/think2.gif";   // 思考
-    if (clickCount === 3) mainImage.src = "images/think4.gif";   // 生气
-    if (clickCount === 4) mainImage.src = "images/crying3.gif";   // 生气
-    if (clickCount === 5) mainImage.src = "images/crying4.gif";  // 哭
-    if (clickCount === 6) mainImage.src = "images/crying2.gif";  // 哭
-    if (clickCount >= 7) mainImage.src = "images/think3.gif";  // 之后一直是哭
-
-});
-
-// Yes 按钮点击后，进入表白成功页面
-//yesButton.addEventListener("click", function() {
- //   document.body.innerHTML = `
-   //     <div class="yes-screen">
-      //      <h1 class="yes-text">!!!喜欢你!! ( >᎑<)♡︎ᐝ</h1>
-        //    <img src="images/hug2.gif" alt="拥抱" class="yes-image">
-     //   </div>
- ///   `;
-
-  //  document.body.style.overflow = "hidden";
-//});
-yesButton.addEventListener("click", function() {
-    document.body.innerHTML = `
-        <div class="yes-screen">
-            <!-- 标题 -->
-            <h1 class="yes-text">!!!喜欢你!! ( >᎑<)♡︎ᐝ</h1>
-            
-            <!-- 动图 -->
-            <img src="images/hug2.gif" alt="拥抱" class="yes-image">
-            
-            <!-- 开始看信按钮 -->
-            <button class="read-letter-btn" id="readLetterBtn">📮 打开我的信</button>
-            
-            <!-- 信件内容（初始隐藏） -->
-            <div class="letter-container" id="letterContainer">
-                <div class="letter">
-                    <div class="letter-header">
-                        <div class="heart">💌</div>
-                        <h2>给最特别的你</h2>
-                        <div class="date">2024.02.13</div>
-                    </div>
-                    
-                    <div class="letter-content">
+// 成功页面的 HTML 模板
+const successPageHTML = `
+    <div class="yes-screen">
+        <!-- 标题 -->
+        <h1 class="yes-text">!!!喜欢你!! ( >᎑<)♡︎ᐝ</h1>
+        
+        <!-- 动图 -->
+        <img src="images/hug2.gif" alt="拥抱" class="yes-image">
+        
+        <!-- 开始看信按钮 -->
+        <button class="read-letter-btn" id="readLetterBtn">📮 打开我的信</button>
+        
+        <!-- 信件内容（初始隐藏） -->
+        <div class="letter-container" id="letterContainer">
+            <div class="letter">
+                <div class="letter-header">
+                    <div class="heart">💌</div>
+                    <h2>给最特别的你</h2>
+                    <div class="date">2025.12.18</div>
+                </div>
+                
+                <div class="letter-content" id="letterContent">
+                    <div class="letter-scroll-content" id="letterScrollContent">
                         <p>亲爱的丹珍：</p>
-
                         <p>......</p>
-                        
-                        <p>学妹 你太美好了</p>
+                        <p>丹珍 你太美好了</p>
                         <p>你说话时温柔的语气</p>
                         <p>你笑起来浅浅的酒窝</p>
                         <p>你低头做题时微蹙的眉</p>
@@ -140,7 +369,7 @@ yesButton.addEventListener("click", function() {
                         <p>你的三观</p>
                         <p>你的明媚</p>
                         <p>你的疲惫</p>
-                        <p>你会记住我喜欢和讨厌的事情</p>
+                        <p>你记住的我喜欢和讨厌的事情</p>
                         <p>你为了我改变了一小部分的自己</p>
                         <p>你会认真记录着我</p>
                         <p>你为我准备的惊喜</p>
@@ -166,346 +395,307 @@ yesButton.addEventListener("click", function() {
                         <p>你身份证上鲜活的面孔</p>
                         <p>你温润洁净的皮肤</p>
                         <p>我喜欢你任何样子 包括你的名字 一笔一画都想刻在我心里</p>
-            
-            <!-- 浪漫点缀 -->
-            <div class="hearts-container"></div>
+                        <p>......</p>
+                        <p>完整版请于12月19日与鱼洲见面获取</p>
+                    </div>
+                </div>
+                
+                <!-- 滚动控制按钮 -->
+                <div class="scroll-controls">
+                    <button class="scroll-control-btn pause" id="pauseScroll">暂停</button>
+                    <button class="scroll-control-btn resume" id="resumeScroll">继续</button>
+                    <button class="scroll-control-btn restart" id="restartScroll">重新开始</button>
+                </div>
+                
+                <div class="letter-footer">
+                    <p>爱你的</p>
+                    <p class="signature">鱼洲</p>
+                </div>
+            </div>
         </div>
-    `;
-    
-    // ... 后面的JavaScript代码保持不变 ...
-    
-    // 设置页面样式
-    
-    document.body.style.overflowY = "auto";  // 允许垂直滚动
-    // 添加CSS样式
-    const style = document.createElement('style');
-    style.textContent = `
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        
+        <!-- 浪漫点缀 -->
+        <div class="hearts-container"></div>
+    </div>
+`;
+
+// 主程序逻辑
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取元素
+    let yesButton = document.getElementById("yes");
+    let noButton = document.getElementById("no");
+    let questionText = document.getElementById("question");
+    let mainImage = document.getElementById("mainImage");
+
+    // 检查元素是否存在
+    if (!yesButton || !noButton || !questionText || !mainImage) {
+        console.error("Required elements not found! Please check your HTML structure.");
+        return;
+    }
+
+    let clickCount = 0;  // 记录点击 No 的次数
+
+    // No 按钮的文字变化
+    const noTexts = [
+        "？你认真的吗…", 
+        "要不再想想？", 
+        "不许选这个！ ", 
+        "我会很伤心…", 
+        "好伤心...",
+        "为什么选这个?！",
+        "不行:("
+    ];
+
+    // 添加成功页面样式（只添加一次）
+    if (!document.getElementById('success-styles')) {
+        const styleEl = document.createElement('style');
+        styleEl.id = 'success-styles';
+        styleEl.textContent = successPageStyles;
+        document.head.appendChild(styleEl);
+    }
+
+    // No 按钮点击事件
+    noButton.addEventListener("click", function() {
+        clickCount++;
+
+        // 让 Yes 变大，每次放大
+        let yesSize = 1 + (clickCount * 1.2);
+        yesButton.style.transform = `scale(${yesSize})`;
+
+        // 挤压 No 按钮，每次右移
+        let noOffset = clickCount * 50;
+        noButton.style.transform = `translateX(${noOffset}px)`;
+
+        // 让图片和文字往上移动
+        let moveUp = clickCount * 25;
+        if (mainImage) mainImage.style.transform = `translateY(-${moveUp}px)`;
+        if (questionText) questionText.style.transform = `translateY(-${moveUp}px)`;
+
+        // No 文案变化
+        if (clickCount <= 7 && clickCount > 0) {
+            noButton.innerText = noTexts[clickCount - 1] || noTexts[noTexts.length - 1];
+        }
+
+        // 图片变化
+        const imageMap = {
+            1: "images/shocked2.gif",
+            2: "images/think2.gif",
+            3: "images/think4.gif",
+            4: "images/crying3.gif",
+            5: "images/crying4.gif",
+            6: "images/crying2.gif"
+        };
+        
+        if (clickCount in imageMap && mainImage) {
+            mainImage.src = imageMap[clickCount];
+        } else if (clickCount >= 7 && mainImage) {
+            mainImage.src = "images/think3.gif";
         }
         
-        body {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-            min-height: 100vh;
-            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
-            color: #333;
-            overflow-x: hidden;
-        }
-        
-        .yes-screen {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            position: relative;
-        }
-        
-        .yes-text {
-            color: #e91e63;
-            font-size: 2.8rem;
-            margin: 20px 0 30px;
-            text-align: center;
-            text-shadow: 3px 3px 0 rgba(255, 255, 255, 0.5);
-            animation: heartbeat 1.2s infinite;
-        }
-        
-        .yes-image {
-            max-width: 320px;
-            width: 90%;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(233, 30, 99, 0.3);
-            margin-bottom: 30px;
-            border: 5px solid white;
-        }
-        
-        /* 看信按钮 */
-        .read-letter-btn {
-            background: linear-gradient(45deg, #ff4081, #e91e63);
-            color: white;
-            border: none;
-            padding: 18px 40px;
-            font-size: 1.3rem;
-            border-radius: 50px;
-            cursor: pointer;
-            margin: 20px 0 40px;
-            box-shadow: 0 8px 20px rgba(233, 30, 99, 0.4);
-            transition: all 0.3s ease;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-        
-        .read-letter-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 12px 25px rgba(233, 30, 99, 0.6);
-        }
-        
-        /* 信件容器 */
-        .letter-container {
-            display: none;
-            max-width: 800px;
-            width: 95%;
-            margin: 20px auto;
-            animation: slideUp 0.8s ease-out;
-        }
-        
-        /* 信件样式 */
-        .letter {
-            background: linear-gradient(to bottom, #fff9f9, #fff0f5);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-            position: relative;
-            border: 2px solid #ffb6c1;
-        }
-        
-        .letter:before {
-            content: '';
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            bottom: 10px;
-            border: 1px dashed #ffb6c1;
-            border-radius: 15px;
-            pointer-events: none;
-        }
-        
-        .letter-header {
-            text-align: center;
-            margin-bottom: 40px;
-            border-bottom: 2px solid #ffd6e0;
-            padding-bottom: 20px;
-        }
-        
-        .heart {
-            font-size: 3rem;
-            animation: float 3s infinite;
-        }
-        
-        .letter-header h2 {
-            color: #e91e63;
-            font-size: 2.2rem;
-            margin: 15px 0 10px;
-        }
-        
-        .date {
-            color: #ff6b9d;
-            font-size: 1.1rem;
-            font-style: italic;
-        }
-        
-        .letter-content {
-            line-height: 1.8;
-            font-size: 1.15rem;
-            color: #555;
-        }
-        
-        .letter-content p {
-            margin-bottom: 20px;
-            text-align: justify;
-        }
-        
-        .important-text {
-            background: linear-gradient(135deg, #fff0f5, #ffe6ee);
-            border-left: 5px solid #ff4081;
-            padding: 25px;
-            margin: 30px 0;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            color: #d81b60;
-        }
-        
-        .important-text p {
-            margin: 15px 0;
-            font-weight: 600;
-        }
-        
-        .letter-footer {
-            text-align: right;
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 1px dashed #ffb6c1;
-        }
-        
-        .signature {
-            font-size: 1.3rem;
-            color: #e91e63;
-            font-weight: bold;
-            margin-top: 10px;
-            animation: glow 2s infinite;
-        }
-        
-        /* 信件按钮 */
-        .letter-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 40px;
-            flex-wrap: wrap;
-        }
-        
-        .close-letter, .reply-btn {
-            padding: 16px 35px;
-            font-size: 1.2rem;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-        
-        .close-letter {
-            background: linear-gradient(45deg, #9c27b0, #673ab7);
-            color: white;
-        }
-        
-        .reply-btn {
-            background: linear-gradient(45deg, #4CAF50, #2E7D32);
-            color: white;
-        }
-        
-        .close-letter:hover, .reply-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        
-        /* 动画 */
-        @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        @keyframes glow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* 爱心动画 */
-        .hearts-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .yes-text {
-                font-size: 2rem;
-            }
-            
-            .letter {
-                padding: 25px;
-            }
-            
-            .letter-header h2 {
-                font-size: 1.8rem;
-            }
-            
-            .letter-content {
-                font-size: 1rem;
-            }
-            
-            .letter-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .close-letter, .reply-btn {
-                width: 100%;
-                max-width: 300px;
-            }
-        }
-        
-        /* 打印优化 */
-        @media print {
-            .read-letter-btn, .letter-buttons {
-                display: none;
-            }
-            
-            .letter {
-                box-shadow: none;
-                border: 1px solid #ccc;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // 添加显示信件的功能
-    document.getElementById('readLetterBtn').addEventListener('click', function() {
-        const letterContainer = document.getElementById('letterContainer');
-        letterContainer.style.display = 'block';
-        this.style.display = 'none';
-        createFloatingHearts();
     });
-    
-    // 创建漂浮的爱心
+
+    // Yes 按钮点击事件
+    yesButton.addEventListener("click", function() {
+        // 设置新内容
+        document.body.className = '';
+        document.body.innerHTML = successPageHTML;
+        document.body.style.overflow = "auto";
+        document.body.classList.add('success-page');
+        
+        // 添加事件监听
+        setupSuccessPageEvents();
+    });
+
+    // 创建漂浮爱心
     function createFloatingHearts() {
         const heartsContainer = document.querySelector('.hearts-container');
+        if (!heartsContainer) return;
+        
+        // 清除已有的爱心
+        heartsContainer.innerHTML = '';
+        
         const hearts = ['💖', '💕', '💓', '💗', '💘', '💝', '💞'];
         
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 15; i++) {
             const heart = document.createElement('div');
             heart.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
             heart.style.cssText = `
                 position: absolute;
                 font-size: ${Math.random() * 20 + 20}px;
                 left: ${Math.random() * 100}%;
+                top: ${Math.random() * 100}%;
                 opacity: ${Math.random() * 0.5 + 0.3};
                 animation: floatHeart ${Math.random() * 10 + 10}s linear infinite;
+                animation-delay: ${Math.random() * 5}s;
                 z-index: -1;
             `;
-            
-            const keyframes = `
-                @keyframes floatHeart${i} {
-                    0% {
-                        transform: translateY(100vh) rotate(0deg);
-                        opacity: 0;
-                    }
-                    10% {
-                        opacity: 1;
-                    }
-                    90% {
-                        opacity: 1;
-                    }
-                    100% {
-                        transform: translateY(-100px) rotate(${Math.random() * 360}deg);
-                        opacity: 0;
-                    }
-                }
-            `;
-            
-            const style = document.createElement('style');
-            style.textContent = keyframes.replace(`floatHeart${i}`, 'floatHeart');
-            document.head.appendChild(style);
-            
             heartsContainer.appendChild(heart);
         }
     }
+
+    // 设置信件自动滚动（只播放一次）
+    function setupAutoScroll() {
+        const scrollContent = document.getElementById('letterScrollContent');
+        const pauseBtn = document.getElementById('pauseScroll');
+        const resumeBtn = document.getElementById('resumeScroll');
+        const restartBtn = document.getElementById('restartScroll');
+        const letterContent = document.querySelector('.letter-content');
+        
+        if (!scrollContent || !pauseBtn || !resumeBtn || !restartBtn || !letterContent) return;
+        
+        // 计算滚动距离和动画时间
+        const scrollHeight = scrollContent.scrollHeight;
+        const containerHeight = letterContent.offsetHeight;
+        const scrollDistance = scrollHeight - containerHeight;
+        
+        // 计算动画持续时间（大约每分钟滚动300像素）
+        const duration = Math.max(30, Math.min(90, (scrollDistance / 300) * 60)); // 30-90秒之间
+        
+        // 开始自动滚动（只播放一次）
+        function startAutoScroll() {
+            scrollContent.style.animation = `autoScrollOnce ${duration}s linear forwards`;
+            scrollContent.classList.remove('auto-scroll-paused', 'scroll-completed');
+            
+            // 启用按钮
+            pauseBtn.classList.remove('disabled');
+            resumeBtn.classList.add('disabled');
+            restartBtn.classList.remove('disabled');
+            
+            // 监听动画结束事件
+            scrollContent.addEventListener('animationend', onAnimationEnd, { once: true });
+        }
+        
+        // 动画结束时的处理
+        function onAnimationEnd() {
+            scrollContent.classList.add('scroll-completed');
+            pauseBtn.classList.add('disabled');
+            resumeBtn.classList.add('disabled');
+            restartBtn.classList.remove('disabled');
+        }
+        
+        // 暂停滚动
+        pauseBtn.addEventListener('click', function() {
+            if (this.classList.contains('disabled')) return;
+            scrollContent.classList.add('auto-scroll-paused');
+            this.classList.add('disabled');
+            resumeBtn.classList.remove('disabled');
+        });
+        
+        // 继续滚动
+        resumeBtn.addEventListener('click', function() {
+            if (this.classList.contains('disabled')) return;
+            scrollContent.classList.remove('auto-scroll-paused');
+            this.classList.add('disabled');
+            pauseBtn.classList.remove('disabled');
+        });
+        
+        // 重新开始滚动
+        restartBtn.addEventListener('click', function() {
+            if (this.classList.contains('disabled')) return;
+            
+            // 移除之前的事件监听
+            scrollContent.removeEventListener('animationend', onAnimationEnd);
+            
+            // 重置到开始位置
+            scrollContent.style.animation = 'none';
+            scrollContent.style.transform = 'translateY(0)';
+            
+            // 重新开始滚动
+            setTimeout(() => {
+                startAutoScroll();
+            }, 10);
+        });
+        
+        // 鼠标悬停时暂停，移开时继续
+        letterContent.addEventListener('mouseenter', function() {
+            if (!scrollContent.classList.contains('scroll-completed') && 
+                !pauseBtn.classList.contains('disabled')) {
+                scrollContent.classList.add('auto-scroll-paused');
+            }
+        });
+        
+        letterContent.addEventListener('mouseleave', function() {
+            if (!scrollContent.classList.contains('scroll-completed') && 
+                !pauseBtn.classList.contains('disabled')) {
+                scrollContent.classList.remove('auto-scroll-paused');
+            }
+        });
+        
+        // 触摸设备支持
+        let touchTimer = null;
+        letterContent.addEventListener('touchstart', function() {
+            if (!scrollContent.classList.contains('scroll-completed') && 
+                !pauseBtn.classList.contains('disabled')) {
+                scrollContent.classList.add('auto-scroll-paused');
+            }
+        });
+        
+        letterContent.addEventListener('touchend', function() {
+            if (!scrollContent.classList.contains('scroll-completed') && 
+                !pauseBtn.classList.contains('disabled')) {
+                if (touchTimer) clearTimeout(touchTimer);
+                touchTimer = setTimeout(() => {
+                    scrollContent.classList.remove('auto-scroll-paused');
+                }, 2000);
+            }
+        });
+        
+        // 开始自动滚动
+        startAutoScroll();
+    }
+
+    // 设置成功页面事件
+    function setupSuccessPageEvents() {
+        const readLetterBtn = document.getElementById('readLetterBtn');
+        if (readLetterBtn) {
+            readLetterBtn.onclick = function() {
+                const letterContainer = document.getElementById('letterContainer');
+                if (letterContainer) {
+                    letterContainer.style.display = 'block';
+                    this.style.display = 'none';
+                    
+                    // 创建漂浮爱心
+                    setTimeout(() => {
+                        createFloatingHearts();
+                    }, 300);
+                    
+                    // 设置自动滚动
+                    setTimeout(() => {
+                        setupAutoScroll();
+                    }, 500);
+                    
+                    // 滚动到信件
+                    setTimeout(() => {
+                        letterContainer.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }, 800);
+                }
+            };
+        }
+        
+        // 预加载成功页面的图片
+        preloadImage("images/hug2.gif");
+    }
+
+    // 图片预加载函数
+    function preloadImage(src) {
+        const img = new Image();
+        img.src = src;
+    }
+
+    // 预加载所有需要的图片
+    const imagesToPreload = [
+        "images/shocked2.gif",
+        "images/think2.gif", 
+        "images/think4.gif",
+        "images/crying3.gif",
+        "images/crying4.gif",
+        "images/crying2.gif",
+        "images/think3.gif",
+        "images/hug2.gif"
+    ];
     
-    // 初始创建一些爱心
-    createFloatingHearts();
+    imagesToPreload.forEach(preloadImage);
 });
