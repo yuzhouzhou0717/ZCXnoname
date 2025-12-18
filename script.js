@@ -185,6 +185,30 @@ const successPageStyles = `
         box-shadow: none;
     }
     
+    /* 惊喜按钮样式 */
+    .surprise-btn {
+        background: linear-gradient(45deg, #FF9800, #FF5722);
+        color: white;
+        border: none;
+        padding: 18px 45px;
+        font-size: 1.4rem;
+        border-radius: 50px;
+        cursor: pointer;
+        margin: 30px auto 40px;
+        display: block;
+        box-shadow: 0 8px 25px rgba(255, 87, 34, 0.4);
+        transition: all 0.3s ease;
+        font-weight: bold;
+        letter-spacing: 1.5px;
+        animation: pulse 2s infinite;
+    }
+    
+    .surprise-btn:hover {
+        transform: translateY(-5px) scale(1.08);
+        box-shadow: 0 12px 30px rgba(255, 87, 34, 0.6);
+        background: linear-gradient(45deg, #FFB74D, #FF8A65);
+    }
+    
     .hearts-container {
         position: fixed;
         top: 0;
@@ -238,6 +262,17 @@ const successPageStyles = `
         }
     }
     
+    @keyframes pulse {
+        0%, 100% { 
+            transform: scale(1);
+            box-shadow: 0 8px 25px rgba(255, 87, 34, 0.4);
+        }
+        50% { 
+            transform: scale(1.05);
+            box-shadow: 0 12px 30px rgba(255, 87, 34, 0.6);
+        }
+    }
+    
     /* 自动滚动动画 - 只播放一次 */
     @keyframes autoScrollOnce {
         0% {
@@ -276,7 +311,7 @@ const successPageStyles = `
         }
         
         .scroll-completed {
-            transform: translateY(calc(-100% + 300px +30px));
+            transform: translateY(calc(-100% + 300px + 30px));
         }
         
         .scroll-controls {
@@ -286,6 +321,13 @@ const successPageStyles = `
         
         .scroll-control-btn {
             width: 200px;
+        }
+        
+        .surprise-btn {
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            width: 80%;
+            max-width: 300px;
         }
     }
 `;
@@ -412,6 +454,9 @@ const successPageHTML = `
                     <p class="signature">鱼洲</p>
                 </div>
             </div>
+            
+            <!-- 惊喜按钮 -->
+            <button class="surprise-btn" id="surpriseBtn">✨ 点击领取惊喜 ✨</button>
         </div>
         
         <!-- 浪漫点缀 -->
@@ -491,7 +536,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (clickCount >= 7 && mainImage) {
             mainImage.src = "images/think3.gif";
         }
-        
     });
 
     // Yes 按钮点击事件
@@ -644,6 +688,22 @@ document.addEventListener('DOMContentLoaded', function() {
         startAutoScroll();
     }
 
+    // 跳转到惊喜页面
+    function goToSurprisePage() {
+        // 这里替换成您想要跳转的URL
+        const surpriseURL = "https://example.com/surprise-page"; // 请替换为实际的惊喜页面URL
+        
+        // 添加一个简单的过渡效果
+        const body = document.body;
+        body.style.transition = 'opacity 0.5s ease';
+        body.style.opacity = '0';
+        
+        // 等待过渡效果完成后跳转
+        setTimeout(() => {
+            window.location.href = surpriseURL;
+        }, 500);
+    }
+
     // 设置成功页面事件
     function setupSuccessPageEvents() {
         const readLetterBtn = document.getElementById('readLetterBtn');
@@ -672,6 +732,24 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     }, 800);
                 }
+            };
+        }
+        
+        // 设置惊喜按钮事件
+        const surpriseBtn = document.getElementById('surpriseBtn');
+        if (surpriseBtn) {
+            surpriseBtn.onclick = function() {
+                // 添加点击效果
+                this.style.transform = 'scale(0.95)';
+                this.style.transition = 'transform 0.2s ease';
+                
+                // 显示提示信息
+                this.textContent = '准备惊喜中...';
+                
+                // 延迟跳转，让用户看到效果
+                setTimeout(() => {
+                    goToSurprisePage();
+                }, 800);
             };
         }
         
