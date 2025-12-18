@@ -691,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 跳转到惊喜页面
     function goToSurprisePage() {
         // 这里替换成您想要跳转的URL
-        const surpriseURL = "https://example.com/surprise-page"; // 请替换为实际的惊喜页面URL
+        const surpriseURL = "https://yuzhouzhou0717.github.io/A-Gift-for-Dan-Zhen/DZ.html"; // 请替换为实际的惊喜页面URL
         
         // 添加一个简单的过渡效果
         const body = document.body;
