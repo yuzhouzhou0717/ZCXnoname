@@ -466,6 +466,43 @@ const successPageHTML = `
 
 // 主程序逻辑
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化背景音乐 - 在页面加载时就创建
+    let backgroundMusic = null;
+    
+    // 创建并设置背景音乐
+    function setupBackgroundMusic() {
+        // 创建音频元素
+        backgroundMusic = new Audio();
+        
+        // 设置音乐URL - 请替换为您实际的音乐文件路径
+        // 例如: "music/background.mp3" 或 "audio/bgm.mp3"
+        backgroundMusic.src = "xx.mp3"; // ← 修改这里
+        
+        // 设置音乐属性
+        backgroundMusic.loop = true; // 循环播放
+        backgroundMusic.volume = 0.3; // 音量30%，比较柔和
+        
+        // 尝试自动播放
+        document.addEventListener('click', function startMusic() {
+            if (backgroundMusic) {
+                backgroundMusic.play().catch(error => {
+                    console.log("自动播放被阻止，需要用户交互");
+                });
+            }
+            // 移除事件监听，只执行一次
+            document.removeEventListener('click', startMusic);
+        }, { once: true });
+        
+        // 保存到全局，方便其他函数访问
+        window.backgroundMusic = backgroundMusic;
+        
+        // 预加载音乐
+        backgroundMusic.load();
+    }
+    
+    // 页面加载时就初始化音乐
+    setupBackgroundMusic();
+
     // 获取元素
     let yesButton = document.getElementById("yes");
     let noButton = document.getElementById("no");
@@ -536,10 +573,24 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (clickCount >= 7 && mainImage) {
             mainImage.src = "images/think3.gif";
         }
+        
+        // 用户点击时尝试播放音乐
+        if (backgroundMusic && backgroundMusic.paused) {
+            backgroundMusic.play().catch(error => {
+                console.log("音乐播放需要用户明确同意");
+            });
+        }
     });
 
     // Yes 按钮点击事件
     yesButton.addEventListener("click", function() {
+        // 确保音乐在切换页面后继续播放
+        if (backgroundMusic && backgroundMusic.paused) {
+            backgroundMusic.play().catch(error => {
+                console.log("音乐播放失败:", error);
+            });
+        }
+        
         // 设置新内容
         document.body.className = '';
         document.body.innerHTML = successPageHTML;
@@ -690,13 +741,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 跳转到惊喜页面
     function goToSurprisePage() {
-        // 这里替换成您想要跳转的URL
-        const surpriseURL = "https://yuzhouzhou0717.github.io/A-Gift-for-Dan-Zhen/DZ.html"; // 请替换为实际的惊喜页面URL
+        // 跳转到您指定的惊喜页面
+        const surpriseURL = "https://yuzhouzhou0717.github.io/A-Gift-for-Dan-Zhen/DZ.html";
+        
+        // 暂停音乐
+        if (backgroundMusic) {
+            backgroundMusic.pause();
+        }
         
         // 添加一个简单的过渡效果
         const body = document.body;
         body.style.transition = 'opacity 0.5s ease';
         body.style.opacity = '0';
+        
+        // 显示跳转提示
+        const surpriseBtn = document.getElementById('surpriseBtn');
+        if (surpriseBtn) {
+            surpriseBtn.textContent = '✨ 跳转中... ✨';
+        }
         
         // 等待过渡效果完成后跳转
         setTimeout(() => {
@@ -755,6 +817,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 预加载成功页面的图片
         preloadImage("images/hug2.gif");
+        
+        // 确保音乐继续播放
+        if (backgroundMusic && backgroundMusic.paused) {
+            setTimeout(() => {
+                backgroundMusic.play().catch(error => {
+                    console.log("音乐播放失败:", error);
+                });
+            }, 1000);
+        }
     }
 
     // 图片预加载函数
